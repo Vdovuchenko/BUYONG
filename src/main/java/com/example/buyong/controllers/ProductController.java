@@ -1,6 +1,7 @@
 package com.example.buyong.controllers;
 
 import com.example.buyong.models.Product;
+import com.example.buyong.models.User;
 import com.example.buyong.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -19,19 +20,21 @@ import java.security.Principal;
 public class ProductController {
     private final ProductService productService;
 
-
     @GetMapping("/")
-    public String products(@RequestParam(name = "title", required = false) String title, Principal principal, Model model) {
+    public String products(@RequestParam(name = "searchWord", required = false) String title, Principal principal, Model model) {
         model.addAttribute("products", productService.listProducts(title));
         model.addAttribute("user", productService.getUserByPrincipal(principal));
+        model.addAttribute("searchWord", title);
         return "products";
     }
 
     @GetMapping("/product/{id}")
-    public String productInfo(@PathVariable Long id, Model model) {
+    public String productInfo(@PathVariable Long id, Model model, Principal principal) {
         Product product = productService.getProductById(id);
+        model.addAttribute("user", productService.getUserByPrincipal(principal));
         model.addAttribute("product", product);
         model.addAttribute("images", product.getImages());
+        model.addAttribute("authorProduct", product.getUser());
         return "product-info";
     }
 
@@ -41,12 +44,20 @@ public class ProductController {
                                 @RequestParam("file3") MultipartFile file3,
                                 Product product, Principal principal) throws IOException {
         productService.saveProduct(principal, product, file1, file2, file3);
-        return "redirect:/";
+        return "redirect:/my/products";
     }
 
     @PostMapping("/product/delete/{id}")
-    public String deleteProduct(@PathVariable Long id){
-        productService.deleteProduct(id);
-        return "redirect:/";
+    public String deleteProduct(@PathVariable Long id, Principal principal) {
+        productService.deleteProduct(productService.getUserByPrincipal(principal), id);
+        return "redirect:/my/products";
+    }
+
+    @GetMapping("/my/products")
+    public String userProducts(Principal principal, Model model) {
+        User user = productService.getUserByPrincipal(principal);
+        model.addAttribute("user", user);
+        model.addAttribute("products", user.getProducts());
+        return "my-products";
     }
 }

@@ -1,52 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>BUYONG</title>
-</head>
-<body>
-<h1>BUYONG</h1>
-<hr>
-<#if user.email??>
-    <h3>User name: <i>${user.name}</i></h3>
-    <form action="/logout" method="post">
-        <input type="hidden" name="_csrf" value="${_csrf.token}">
-        <input type="submit" value="Log out">
+<#import "blocks/template.ftlh" as t>
+<@t.template user>
+    <h1 style="text-align: center">Search</h1><hr>
+    <form method="get" action="/">
+        <div class="form-row">
+            <div class="form-group col-md-2">
+                <label for="searchCity">City</label>
+                <select id="searchCity" class="form-control">
+                    <option value="">City is not select</option>
+                    <option value="Kyiv">Kyiv</option>
+                    <option value="Dnipro">Dnipro</option>
+                    <option value="Odesa">Odesa</option>
+                </select>
+            </div>
+            <div class="form-group col-md-10">
+                <label for="searchWord">Search</label>
+                <input type="text" name="searchWord" <#if searchWord??>value="${searchWord}"</#if> class="form-control"
+                       id="searchWord">
+            </div>
+            <button style="width: 100%" type="submit" class="btn btn-dark">Search</button>
+        </div>
     </form>
-    <#if user.isAdmin()>
-        <a href="/admin">Administrator panel</a>
-    </#if>
-<#else>
-    <h3><a href="/login">Log in</a></h3>
-</#if>
-<hr>
-
-<h4>Goods from all over the country</h4>
-<form action="/" method="get">
-    Search of title: <input type="text" name="title">
-    <input type="submit" value="Search">
-</form>
-<#list products as product>
-    <div>
-        <p><b>${product.title}</b> ${product.price} $ | <a href="/product/${product.id}">Details...</a></p>
-    </div>
-<#else>
-    <h3>There are no goods</h3>
-</#list>
-<#if user.email??>
     <hr>
-    <h3>Create new goods</h3>
-    <form action="/product/create" method="post" enctype="multipart/form-data">
-        Title: <input type="text" name="title"/><br><br>
-        Description: <input type="text" name="description"/><br><br>
-        Price: <input type="number" name="price"/><br><br>
-        City: <input type="text" name="city"/><br><br>
-        First photo: <input type="file" name="file1"/><br><br>
-        Second photo: <input type="file" name="file2"/><br><br>
-        Third photo: <input type="file" name="file3"/><br><br>
-        <input type="hidden" name="_csrf" value="${_csrf.token}">
-        <input type="submit" value="Add goods"/>
-    </form>
-</#if>
+    <div class="card-columns">
+        <#list products as product>
+            <a href="/product/${product.id}" class="product-link">
+                <div class="card text-white bg-dark my-3 product">
 
-</body>
-</html>
+                    <img src="/images/${product.previewImageId}"
+                         class="card-img-top">
+                    <div class="card-body">
+                        <h5 class="card-title">${product.title}</h5>
+                        <p class="card-text">${product.price} $</p>
+                    </div>
+                    <div class="card-footer">
+                        ${product.city}
+                    </div>
+                </div>
+            </a>
+        <#else>
+            <h1 style="text-align: center">No found</h1>
+        </#list>
+    </div>
+</@t.template>
